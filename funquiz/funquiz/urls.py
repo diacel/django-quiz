@@ -1,5 +1,5 @@
 from django.urls import path
-from funquiz import views
+from quize import views
 
 urlpatterns = [
     path('', views.index, name='index'),

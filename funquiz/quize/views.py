@@ -1,16 +1,35 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.db.models import F
+from django.contrib.auth.decorators import login_required
 from . import models
+from .models import Question, Choice
 
 def index(request):
     latest_question_list = models.Question.objects.order_by('-pub_date')[:5]
     context = {'latest_question_list': latest_question_list}
     return render(request, 'index.html', context)
 
+@login_required
 def detail(request, question_id):
-    question = get_object_or_404(models.Question, pk=question_id)
-    return render(request, 'detail.html', {'question': question})
+    question = get_object_or_404(Question, pk=question_id)
+    user_choice = question.choice_set.filter(users=request.user).first()
+
+    if request.method == 'POST':
+        choice_id = request.POST.get('choice')
+        if choice_id:
+            choice = get_object_or_404(Choice, pk=choice_id)
+            if not user_choice:
+                choice.votes += 1
+                choice.users.add(request.user)
+                choice.save()
+            return redirect('detail', question_id=question_id)
+
+    context = {
+        'question': question,
+        'user_choice': user_choice,
+    }
+    return render(request, 'detail.html', context)
 
 def vote(request, question_id):
     question = get_object_or_404(models.Question, pk=question_id)

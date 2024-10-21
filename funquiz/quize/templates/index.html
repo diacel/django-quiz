@@ -1,16 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Fun Quiz - Questions{% endblock %}
+{% block title %}Quiz List{% endblock %}
 
 {% block content %}
-    <h2>Latest Questions</h2>
-    {% if latest_question_list %}
-        <ul>
-        {% for question in latest_question_list %}
-            <li><a href="{% url 'detail' question.id %}">{{ question.question_text }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No polls are available.</p>
-    {% endif %}
+  <h2>Available Quizzes</h2>
+  {% if latest_question_list %}
+    <ul>
+      {% for question in latest_question_list %}
+        <li>
+          <a href="{% url 'detail' question.id %}">{{ question.question_text }}</a>
+          <br>
+          <small>Created: {{ question.pub_date|date:"F d, Y H:i" }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No polls are available.</p>
+  {% endif %}
 {% endblock %}

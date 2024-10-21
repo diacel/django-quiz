@@ -3,18 +3,28 @@
 {% block title %}{{ question.question_text }}{% endblock %}
 
 {% block content %}
-    <h2>{{ question.question_text }}</h2>
+  <h2>{{ question.question_text }}</h2>
+  <p><small>Создан: {{ question.pub_date|date:"F d, Y H:i" }}</small></p>
 
-    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-
-    <form action="{% url 'vote' question.id %}" method="post">
-    {% csrf_token %}
-    {% for choice in question.choice_set.all %}
-        <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
-        <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
-    {% endfor %}
-    <input type="submit" value="Vote">
+  {% if user_choice %}
+    <p>Ваш выбор: {{ user_choice.choice_text }}</p>
+  {% else %}
+    <form action="{% url 'detail' question.id %}" method="post">
+      {% csrf_token %}
+      {% for choice in question.choice_set.all %}
+        <div>
+          <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+          <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label>
+        </div>
+      {% endfor %}
+      <input type="submit" value="Vote">
     </form>
+  {% endif %}
 
-    <a href="{% url 'index' %}">Back to Questions</a>
+  <h3>Текущие результаты:</h3>
+  <ul>
+    {% for choice in question.choice_set.all %}
+      <li>{{ choice.choice_text }} - {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
+    {% endfor %}
+  </ul>
 {% endblock %}

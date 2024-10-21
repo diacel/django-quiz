@@ -9,7 +9,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.forms import modelformset_factory
 from .models import Quiz
-from django import forms
+from .forms import CustomUserCreationForm
 
 def index(request):
     latest_quiz_list = Quiz.objects.order_by('-created_at')[:5]
@@ -92,17 +92,14 @@ def user_login(request):
 
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, "Registration successful. You are now logged in.")
-            return redirect('index')
-        else:
-            messages.error(request, "Unsuccessful registration. Invalid information.")
+            return redirect('index')  # или куда вы хотите перенаправить после регистрации
     else:
-        form = UserCreationForm()
-    return render(request, "register.html", {"form": form})
+        form = CustomUserCreationForm()
+    return render(request, 'register.html', {'form': form})
 
 def user_logout(request):
     logout(request)

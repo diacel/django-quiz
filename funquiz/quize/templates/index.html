@@ -4,17 +4,21 @@
 
 {% block content %}
   <h2>Available Quizzes</h2>
-  {% if latest_question_list %}
+  {% if latest_quiz_list %}
     <ul>
-      {% for question in latest_question_list %}
+      {% for quiz in latest_quiz_list %}
         <li>
-          <a href="{% url 'detail' question.id %}">{{ question.question_text }}</a>
+          <a href="{% url 'quiz_detail' quiz.id %}">{{ quiz.title }}</a>
           <br>
-          <small>Created: {{ question.pub_date|date:"F d, Y H:i" }}</small>
+          <small>Created by: {{ quiz.creator.username }} | Date: {{ quiz.created_at|date:"F d, Y H:i" }}</small>
         </li>
       {% endfor %}
     </ul>
   {% else %}
-    <p>No polls are available.</p>
+    <p>No quizzes are available.</p>
+  {% endif %}
+  
+  {% if user.is_authenticated %}
+    <a href="{% url 'create_quiz' %}">Create New Quiz</a>
   {% endif %}
 {% endblock %}

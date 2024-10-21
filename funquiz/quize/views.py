@@ -4,10 +4,16 @@ from django.db.models import F
 from django.contrib.auth.decorators import login_required
 from . import models
 from .models import Question, Choice
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib import messages
+from django.forms import modelformset_factory
+from .models import Quiz
+from django import forms
 
 def index(request):
-    latest_question_list = models.Question.objects.order_by('-pub_date')[:5]
-    context = {'latest_question_list': latest_question_list}
+    latest_quiz_list = Quiz.objects.order_by('-created_at')[:5]
+    context = {'latest_quiz_list': latest_quiz_list}
     return render(request, 'index.html', context)
 
 @login_required
@@ -15,14 +21,13 @@ def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     user_choice = question.choice_set.filter(users=request.user).first()
 
-    if request.method == 'POST':
+    if request.method == 'POST' and not user_choice:
         choice_id = request.POST.get('choice')
         if choice_id:
             choice = get_object_or_404(Choice, pk=choice_id)
-            if not user_choice:
-                choice.votes += 1
-                choice.users.add(request.user)
-                choice.save()
+            choice.votes = F('votes') + 1
+            choice.users.add(request.user)
+            choice.save()
             return redirect('detail', question_id=question_id)
 
     context = {
@@ -65,3 +70,77 @@ def vote(request, question_id):
 def results(request, question_id):
     question = get_object_or_404(models.Question, pk=question_id)
     return render(request, 'results.html', {'question': question})
+
+def user_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, f"Welcome, {username}! You have been logged in.")
+                return redirect('index')
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = AuthenticationForm()
+    return render(request, "login.html", {"form": form})
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Registration successful. You are now logged in.")
+            return redirect('index')
+        else:
+            messages.error(request, "Unsuccessful registration. Invalid information.")
+    else:
+        form = UserCreationForm()
+    return render(request, "register.html", {"form": form})
+
+def user_logout(request):
+    logout(request)
+    messages.info(request, "You have successfully logged out.")
+    return redirect('index')
+
+@login_required
+def create_quiz(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        quiz = Quiz.objects.create(title=title, creator=request.user)
+        return redirect('add_question', quiz_id=quiz.id)
+    return render(request, 'create_quiz.html')
+
+@login_required
+def add_question(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id, creator=request.user)
+    ChoiceFormSet = modelformset_factory(Choice, fields=('choice_text',), extra=4)
+    
+    if request.method == 'POST':
+        question_text = request.POST.get('question_text')
+        question = Question.objects.create(quiz=quiz, question_text=question_text)
+        
+        formset = ChoiceFormSet(request.POST, queryset=Choice.objects.none())
+        if formset.is_valid():
+            for form in formset:
+                if form.cleaned_data.get('choice_text'):
+                    Choice.objects.create(question=question, choice_text=form.cleaned_data['choice_text'])
+        
+        if 'add_more' in request.POST:
+            return redirect('add_question', quiz_id=quiz.id)
+        else:
+            return redirect('quiz_detail', quiz_id=quiz.id)
+    
+    formset = ChoiceFormSet(queryset=Choice.objects.none())
+    return render(request, 'add_question.html', {'quiz': quiz, 'formset': formset})
+
+def quiz_detail(request, quiz_id):
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+    questions = quiz.questions.all()  # This will work now
+    return render(request, 'quiz_detail.html', {'quiz': quiz, 'questions': questions})

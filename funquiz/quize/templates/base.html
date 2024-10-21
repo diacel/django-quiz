@@ -63,7 +63,12 @@
 <body>
     <header>
         <h1>Fun Quiz</h1>
-    </header>
+        {% if user.is_authenticated %}
+          <p>Welcome, {{ user.username }}. <a href="{% url 'logout' %}">Logout</a></p>
+        {% else %}
+          <p><a href="{% url 'login' %}">Login</a> or <a href="{% url 'register' %}">Register</a></p>
+        {% endif %}
+      </header>
     <main>
         {% block content %}
         {% endblock %}

@@ -1,10 +1,7 @@
-from django.urls import path
 from django.contrib import admin
-from quize import views
+from django.urls import path, include
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('<int:question_id>/', views.detail, name='detail'),
-    path('<int:question_id>/results/', views.results, name='results'),
-    path('admin/', admin.site.urls)
+    path('', include('quize.urls')),
+    path('admin/', admin.site.urls),
 ]

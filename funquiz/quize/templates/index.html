@@ -8,7 +8,9 @@
     <ul>
       {% for quiz in latest_quiz_list %}
         <li>
-          <a href="{% url 'quiz_detail' quiz.id %}">{{ quiz.title }}</a>
+          <a href="{% if user.is_authenticated %}{% url 'quiz_detail' quiz.id %}{% else %}{% url 'quiz_detail_public' quiz.id %}{% endif %}">
+            {{ quiz.title }}
+          </a>
           <br>
           <small>Created by: {{ quiz.creator.username }} | Date: {{ quiz.created_at|date:"F d, Y H:i" }}</small>
         </li>

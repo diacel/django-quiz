@@ -12,4 +12,6 @@ urlpatterns = [
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
     path('register/', views .register, name='register'),
+    path('quiz/<int:quiz_id>/', views.quiz_detail_public, name='quiz_detail_public'),
+    path('quiz/<int:quiz_id>/detail/', views.quiz_detail, name='quiz_detail'),
 ]

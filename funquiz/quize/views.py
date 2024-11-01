@@ -12,6 +12,8 @@ from .models import Quiz
 from .forms import CustomUserCreationForm
 from django.forms import formset_factory
 from django import forms
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
 
 def index(request):
     latest_quiz_list = Quiz.objects.order_by('-created_at')[:5]
@@ -156,7 +158,13 @@ def add_question(request, quiz_id):
         'formset': formset
     })
 
+@login_required
 def quiz_detail(request, quiz_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id)
     questions = quiz.questions.all()  # This will work now
     return render(request, 'quiz_detail.html', {'quiz': quiz, 'questions': questions})
+
+def quiz_detail_public(request, quiz_id):
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+    message = "Пожалуйста, зарегистрируйтесь, чтобы увидеть детали квиза."
+    return render(request, 'quiz_detail_public.html', {'quiz': quiz, 'message': message})

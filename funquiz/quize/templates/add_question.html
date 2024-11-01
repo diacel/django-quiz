@@ -4,16 +4,101 @@
   <h2>Add Question to {{ quiz.title }}</h2>
   <form method="post">
     {% csrf_token %}
-    <label for="question_text">Question:</label>
-    <input type="text" name="question_text" id="question_text" required>
-    
-    <h3>Choices:</h3>
     {{ formset.management_form }}
-    {% for form in formset %}
-      {{ form.choice_text }}
-    {% endfor %}
     
-    <button type="submit" name="add_more">Add Question and Continue</button>
-    <button type="submit" name="finish">Finish Quiz</button>
+    <div class="form-group">
+      <label for="question_text">Question:</label>
+      <input type="text" name="question_text" id="question_text" class="form-control" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="num_choices">Number of choices:</label>
+      <input type="number" name="num_choices" id="num_choices" min="2" max="10" value="2" class="form-control">
+    </div>
+    
+    <div id="choices-container">
+      {% for form in formset %}
+        <div class="choice-form">
+          <label>Choice {{ forloop.counter }}:</label>
+          {{ form.choice_text }}
+        </div>
+      {% endfor %}
+    </div>
+    
+    <div class="button-group" style="margin-top: 20px;">
+      <button type="submit" name="add_more" class="btn btn-primary">Add Question and Continue</button>
+      <button type="submit" name="finish" class="btn btn-success">Finish Quiz</button>
+    </div>
   </form>
+
+  <script>
+    document.getElementById('num_choices').addEventListener('change', function() {
+      const container = document.getElementById('choices-container');
+      const numChoices = parseInt(this.value);
+      container.innerHTML = '';
+      
+      for (let i = 0; i < numChoices; i++) {
+        const div = document.createElement('div');
+        div.className = 'choice-form';
+        
+        const label = document.createElement('label');
+        label.textContent = `Choice ${i + 1}:`;
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = `form-${i}-choice_text`;
+        input.className = 'form-control';
+        input.required = true;
+        
+        div.appendChild(label);
+        div.appendChild(input);
+        container.appendChild(div);
+      }
+      
+      // Обновляем management form
+      document.querySelector('[name="form-TOTAL_FORMS"]').value = numChoices;
+    });
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+      const initialForms = document.querySelectorAll('.choice-form').length;
+      document.getElementById('num_choices').value = initialForms;
+    });
+  </script>
+
+  <style>
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .choice-form {
+      margin-bottom: 10px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-success {
+      background-color: #28a745;
+      color: white;
+    }
+  </style>
 {% endblock %}

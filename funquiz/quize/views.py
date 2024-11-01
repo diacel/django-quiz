@@ -10,11 +10,20 @@ from django.contrib import messages
 from django.forms import modelformset_factory
 from .models import Quiz
 from .forms import CustomUserCreationForm
+from django.forms import formset_factory
+from django import forms
 
 def index(request):
     latest_quiz_list = Quiz.objects.order_by('-created_at')[:5]
     context = {'latest_quiz_list': latest_quiz_list}
     return render(request, 'index.html', context)
+
+class ChoiceForm(forms.Form):
+    choice_text = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
 
 @login_required
 def detail(request, question_id):
@@ -117,25 +126,35 @@ def create_quiz(request):
 @login_required
 def add_question(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id, creator=request.user)
-    ChoiceFormSet = modelformset_factory(Choice, fields=('choice_text',), extra=4)
     
     if request.method == 'POST':
         question_text = request.POST.get('question_text')
-        question = Question.objects.create(quiz=quiz, question_text=question_text)
+        num_choices = int(request.POST.get('num_choices', 2))
         
-        formset = ChoiceFormSet(request.POST, queryset=Choice.objects.none())
+        ChoiceFormSet = formset_factory(ChoiceForm, extra=num_choices)
+        formset = ChoiceFormSet(request.POST)
+        
         if formset.is_valid():
+            question = Question.objects.create(quiz=quiz, question_text=question_text)
             for form in formset:
                 if form.cleaned_data.get('choice_text'):
-                    Choice.objects.create(question=question, choice_text=form.cleaned_data['choice_text'])
-        
-        if 'add_more' in request.POST:
-            return redirect('add_question', quiz_id=quiz.id)
-        else:
-            return redirect('quiz_detail', quiz_id=quiz.id)
+                    Choice.objects.create(
+                        question=question,
+                        choice_text=form.cleaned_data['choice_text']
+                    )
+            
+            if 'add_more' in request.POST:
+                return redirect('add_question', quiz_id=quiz.id)
+            else:
+                return redirect('quiz_detail', quiz_id=quiz.id)
+    else:
+        ChoiceFormSet = formset_factory(ChoiceForm, extra=2)
+        formset = ChoiceFormSet()
     
-    formset = ChoiceFormSet(queryset=Choice.objects.none())
-    return render(request, 'add_question.html', {'quiz': quiz, 'formset': formset})
+    return render(request, 'add_question.html', {
+        'quiz': quiz,
+        'formset': formset
+    })
 
 def quiz_detail(request, quiz_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id)

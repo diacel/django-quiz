@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ quiz.title }}</h1>
+  <p>{{ message }}</p>
+  <p><a href="{% url 'register' %}">Зарегистрироваться</a> или <a href="{% url 'login' %}">войти</a></p>
+{% endblock %}

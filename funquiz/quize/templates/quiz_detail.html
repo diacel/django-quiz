@@ -14,5 +14,7 @@
   {% endfor %}
   </ul>
 
-  <a href="{% url 'add_question' quiz.id %}">Add a new question</a>
+  {% if user == quiz.creator %}
+    <a href="{% url 'add_question' quiz.id %}">Add a new question</a>
+  {% endif %}
 {% endblock %}

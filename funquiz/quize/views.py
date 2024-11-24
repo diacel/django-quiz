@@ -28,6 +28,9 @@ class ChoiceForm(forms.Form):
     )
 
 @login_required
+def profile_view(request):
+    return render(request, 'profile.html', {'user': request.user})
+
 def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     user_choice = question.choice_set.filter(users=request.user).first()

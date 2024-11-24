@@ -55,8 +55,8 @@
             background-color: #2980b9;
         }
         small {
-        color: #777;
-        font-size: 0.8em;
+            color: #777;
+            font-size: 0.8em;
         }
     </style>
 </head>
@@ -64,17 +64,19 @@
     <header>
         <h1>Fun Quiz</h1>
         {% if user.is_authenticated %}
-          <p>Welcome, {{ user.username }}. <a href="{% url 'logout' %}">Logout</a></p>
+            <p>Добро пожаловать, {{ user.username }}. 
+            <a href="{% url 'profile' %}">Личный кабинет</a> | 
+            <a href="{% url 'logout' %}">Выход</a></p>
         {% else %}
-          <p><a href="{% url 'login' %}">Login</a> or <a href="{% url 'register' %}">Register</a></p>
+            <p><a href="{% url 'login' %}">Войти</a> или <a href="{% url 'register' %}">Зарегистрироваться</a></p>
         {% endif %}
-      </header>
+    </header>
     <main>
         {% block content %}
         {% endblock %}
     </main>
     <footer>
-        <p>&copy; 2024 Fun Quiz. All rights reserved.</p>
+        <p>&copy; 2024 Fun Quiz. Все права защищены.</p>
     </footer>
 </body>
 </html>

@@ -1,13 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль пользователя</title>
-</head>
-<body>
-    <h1>Добро пожаловать, {{ user.username }}!</h1>
-    <p>Email: {{ user.email }}</p>
-    <a href="{% url 'logout' %}">Выйти</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Профиль пользователя{% endblock %}
+
+{% block content %}
+<h2>Профиль пользователя</h2>
+<p>Имя пользователя: {{ user.username }}</p>
+<p>Email: {{ user.email }}</p>
+<p>Вопросов создано: {{ questions_created }}</p>
+<p>Вопросов отвечено: {{ questions_answered }}</p>
+
+<p><a href="{% url 'index' %}">Вернуться на главную</a></p>
+{% endblock %}

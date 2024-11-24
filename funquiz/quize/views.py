@@ -29,7 +29,22 @@ class ChoiceForm(forms.Form):
 
 @login_required
 def profile_view(request):
-    return render(request, 'profile.html', {'user': request.user})
+    # Подсчет количества вопросов, созданных пользователем
+    questions_created = Question.objects.filter(quiz__creator=request.user).count()
+
+    # Подсчет количества вопросов, на которые пользователь ответил
+    questions_answered = sum(
+        1 for question in Question.objects.all() 
+        if question.choice_set.filter(users=request.user).exists()
+    )
+
+    context = {
+        'user': request.user,
+        'questions_created': questions_created,
+        'questions_answered': questions_answered,
+    }
+    
+    return render(request, 'profile.html', context)
 
 def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
